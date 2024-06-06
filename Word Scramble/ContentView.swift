@@ -16,6 +16,8 @@ struct ContentView: View {
     @State private var errorMessage = ""
     @State private var showingError = false
     
+    @State private var score = 0
+    
     func wordError (title: String, message: String) {
         errorTitle = title
         errorMessage = message
@@ -28,6 +30,22 @@ struct ContentView: View {
         )
         
         guard answer.count > 0 else { return }
+        
+        guard answer.count >= 3 else {
+                  wordError(
+                      title: "Word too short",
+                      message: "Words must be at least three letters long"
+                  )
+                  return
+              }
+              
+        guard answer != rootWord.lowercased() else {
+            wordError(
+                title: "Word not allowed",
+                message: "You can't use the root word as your answer"
+            )
+            return
+        }
         
         guard isOriginal(word: answer) else {
             wordError(
@@ -55,6 +73,7 @@ struct ContentView: View {
         
         withAnimation{
             usedWords.insert(answer, at: 0)
+            score += answer.count
         }
         newWord = ""
     }
@@ -112,6 +131,10 @@ struct ContentView: View {
                         .textInputAutocapitalization(.never)
                 }
                 
+                Section {
+                    Text("\(score)")
+                }
+                
                 Section{
                     ForEach(usedWords, id:\.self) { word in
                         HStack{
@@ -128,6 +151,11 @@ struct ContentView: View {
                 Button("Ok") {}
             } message: {
                 Text(errorMessage)
+            }
+            .toolbar {
+                Button("Restart") {
+                    startGame()
+                }
             }
         }
     }
